@@ -3,6 +3,7 @@ package streaming.dsl.mmlib.algs
 import org.apache.spark.ml.param.Param
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.storage.StorageLevel
 import streaming.dsl.mmlib.SQLAlg
 import streaming.dsl.mmlib.algs.param.{BaseParams, WowParams}
 import streaming.session.MLSQLException
@@ -15,13 +16,15 @@ class SQLCacheExt(override val uid: String) extends SQLAlg with WowParams {
     val exe = params.get(execute.name).getOrElse {
       "cache"
     }
-
+    val repl = params.get(replicate.name).map(f => f.toInt).getOrElse {
+      2
+    }
     if (!execute.isValid(exe)) {
       throw new MLSQLException(s"${execute.name} should be cache or uncache")
     }
 
     if (exe == "cache") {
-      df.persist()
+      df.persist(StorageLevel(false, true, false, true, repl))
     } else {
       df.unpersist()
     }
@@ -39,6 +42,8 @@ class SQLCacheExt(override val uid: String) extends SQLAlg with WowParams {
   final val execute: Param[String] = new Param[String](this, "execute", "cache|uncache", isValid = (m: String) => {
     m == "cache" || m == "uncache"
   })
+
+  final val replicate: Param[Int] = new Param[Int](this, "replicate", "")
 
   def this() = this(BaseParams.randomUID())
 }

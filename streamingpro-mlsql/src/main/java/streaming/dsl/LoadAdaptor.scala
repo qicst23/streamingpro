@@ -125,6 +125,9 @@ class BatchLoadAdaptor(scriptSQLExecListener: ScriptSQLExecListener,
 
         }).get
     }
+    if (option.contains("fileNum")) {
+      table = table.repartition(option("fileNum").toInt)
+    }
     table.createOrReplaceTempView(tableName)
   }
 }

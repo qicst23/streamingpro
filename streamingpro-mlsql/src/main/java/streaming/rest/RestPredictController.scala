@@ -4,6 +4,7 @@ import net.csdn.annotation.rest.At
 import net.csdn.modules.http.ApplicationController
 import net.csdn.modules.http.RestRequest.Method._
 import net.sf.json.{JSONArray, JSONObject}
+import org.apache.spark.OptimizeTaskContext
 import org.apache.spark.ml.linalg.Vectors
 import org.apache.spark.sql.execution.datasources.json.WowJsonInferSchema
 import streaming.core.strategy.platform.{PlatformManager, SparkRuntime}
@@ -34,9 +35,18 @@ class RestPredictController extends ApplicationController {
   def compute = {
     intercept()
     val sparkSession = runtime.asInstanceOf[SparkRuntime].sparkSession
+    //    val df1 = sparkSession.sql(param("sql"))
+    //    val sparkPlan = df1.queryExecution.sparkPlan
+    //    val rdd = sparkPlan.execute()
+    //    val rPartitions = rdd.partitions
+    //    print("partions => " + rPartitions)
+    //    val taskContext = new OptimizeTaskContext
+    //    val rs = rdd.compute(rPartitions.head, taskContext)
+    //    val dateTypes = df1.schema.map(f => f.dataType)
+    //    val list = rs.map(iRow => iRow.toSeq(dateTypes)).toList
+    //    println(list)
     val res = WowJsonInferSchema.toJson(sparkSession.sql(param("sql"))).mkString(",")
-
-    render(200, res)
+    render(200, "[]")
   }
 
   def createContext = {
